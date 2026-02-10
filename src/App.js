@@ -248,7 +248,7 @@ export default function App() {
   const [excuses, setExcuses] = useState([]);
   const [tardies, setTardies] = useState([]);
   const [infirmaryRecords, setInfirmaryRecords] = useState([]);
-  const [ setTeachers] = useState([]);
+  const [teachers, setTeachers] = useState([]);
   const [studentOptions, setStudentOptions] = useState([]);
   const [schoolLogo, setSchoolLogo] = useState(null);
   const [view, setView] = useState('login');
@@ -287,6 +287,7 @@ export default function App() {
   };
 
   useEffect(() => {
+    
     const initSupabase = async () => {
       if (!window.supabase) {
         const script = document.createElement('script');
@@ -396,6 +397,7 @@ export default function App() {
 }, [supabase, user, userProfile, fetchData]);
 
   const handleLogin = async (e) => {
+    console.log(teachers, studentOptions)
     e.preventDefault();
     setLoading(true);
     const { email, password } = e.target;
