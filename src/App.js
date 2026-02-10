@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 // --- CONFIGURACIÓN DE SERVICIOS ---
 const SUPABASE_URL = "https://rirvxgtybkagcqfbhqng.supabase.co";
