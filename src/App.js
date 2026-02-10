@@ -337,69 +337,63 @@ export default function App() {
     }
   };
 
-  const fetchData = async () => {
-    if (!supabase || !user || !userProfile) return;
-    try {
-      let exQuery = supabase.from('excuses').select('*');
+ const fetchData = useCallback(async () => {
+  if (!supabase || !user || !userProfile) return;
 
-      if (userProfile.role === 'teacher') {
-        if (teacherFilter === 'my_grade') {
-          exQuery = exQuery.eq('grade', userProfile.assigned_grade);
-        }
-      } else if (userProfile.role === 'parent') {
-        exQuery = exQuery.eq('parent_id', user.id);
+  try {
+    let exQuery = supabase.from('excuses').select('*');
+
+    if (userProfile.role === 'teacher') {
+      if (teacherFilter === 'my_grade') {
+        exQuery = exQuery.eq('grade', userProfile.assigned_grade);
       }
+    } else if (userProfile.role === 'parent') {
+      exQuery = exQuery.eq('parent_id', user.id);
+    }
 
-      const { data: exD, error } = await exQuery.order('created_at', { ascending: false });
-      if (error) throw error;
-      if (exD) setExcuses(exD);
+    const { data: exD, error } = await exQuery.order('created_at', { ascending: false });
+    if (error) throw error;
+    setExcuses(exD || []);
 
-      const { data: trD } = await supabase.from('tardies').select('*').order('created_at', { ascending: false });
-      if (trD) setTardies(trD);
-      const { data: infD } = await supabase.from('infirmary_records').select('*').order('created_at', { ascending: false });
-      if (infD) setInfirmaryRecords(infD);
+    const { data: trD } = await supabase
+      .from('tardies')
+      .select('*')
+      .order('created_at', { ascending: false });
+    setTardies(trD || []);
 
-      if (userProfile.role === 'admin') {
-        supabase.from('profiles').select('*').eq('role', 'teacher').then(({ data }) => setTeachers(data));
-        const { data: students } = await supabase.from('profiles').select('student_represented').not('student_represented', 'is', null);
-        if (students) setStudentOptions([...new Set(students.map(s => s.student_represented).filter(n => n))]);
-      }
-    } catch (err) { console.error(err); notify("Error cargando datos", "error"); }
-  };
+    const { data: infD } = await supabase
+      .from('infirmary_records')
+      .select('*')
+      .order('created_at', { ascending: false });
+    setInfirmaryRecords(infD || []);
+
+  } catch (err) {
+    console.error(err);
+    notify("Error cargando datos", "error");
+  }
+}, [supabase, user, userProfile, teacherFilter]);
+
 
   useEffect(() => {
-    if (!supabase || !user || !userProfile) return;
-    fetchData();
-    const channel = supabase.channel('custom-all-channel')
-      .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          const newData = payload.new;
-          if (userProfile.role !== 'parent' && payload.table === 'excuses') {
-            notify("🔔 Nueva excusa recibida", "success");
-          }
-          if (userProfile.role === 'parent') {
-            const studentName = userProfile.student_represented?.trim().toLowerCase();
-            const incomingName = newData.student_name?.trim().toLowerCase();
-            if (payload.table === 'tardies' && incomingName === studentName) {
-              notify(`⚠️ TARDANZA REGISTRADA: ${newData.student_name}`, "warning", userProfile.avatar_url);
-            }
-            if (payload.table === 'infirmary_records' && incomingName === studentName) {
-              notify(`🩺 REPORTE ENFERMERÍA: ${newData.student_name}`, "info", userProfile.avatar_url);
-            }
-          }
-        }
-        if (payload.eventType === 'UPDATE' && userProfile.role === 'parent' && payload.table === 'excuses') {
-          const newData = payload.new;
-          if (newData.parent_id === user.id) {
-            if (newData.status === 'approved') notify("✅ Tu excusa ha sido APROBADA", "success", userProfile.avatar_url);
-            if (newData.status === 'rejected') notify("❌ Tu excusa ha sido RECHAZADA", "error", userProfile.avatar_url);
-          }
-        }
+  if (!supabase || !user || !userProfile) return;
+
+  fetchData();
+
+  const channel = supabase
+    .channel('custom-all-channel')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public' },
+      () => {
         fetchData();
-      })
-      .subscribe();
-    return () => supabase.removeChannel(channel);
-  }, [supabase, fetchData, user, userProfile]);
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, [supabase, user, userProfile, fetchData]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
