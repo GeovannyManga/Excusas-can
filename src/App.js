@@ -248,8 +248,7 @@ export default function App() {
   const [excuses, setExcuses] = useState([]);
   const [tardies, setTardies] = useState([]);
   const [infirmaryRecords, setInfirmaryRecords] = useState([]);
-  const [teachers, setTeachers] = useState([]);
-  const [studentOptions, setStudentOptions] = useState([]);
+
   const [schoolLogo, setSchoolLogo] = useState(null);
   const [view, setView] = useState('login');
 
@@ -397,7 +396,7 @@ export default function App() {
 }, [supabase, user, userProfile, fetchData]);
 
   const handleLogin = async (e) => {
-    console.log(teachers, studentOptions)
+    
     e.preventDefault();
     setLoading(true);
     const { email, password } = e.target;
@@ -744,7 +743,7 @@ export default function App() {
         </div>
       )}
 
-      <datalist id="student-list">{studentOptions.map((name, index) => <option key={index} value={name} />)}</datalist>
+      <datalist id="student-list">{[].map((name, index) => <option key={index} value={name} />)}</datalist>
 
       {view === 'login' && !showChangePassword && (
         <div className="flex h-screen items-center justify-center p-4">
@@ -1028,7 +1027,7 @@ export default function App() {
                 )}
 
                 {adminTab === 'teachers' && userProfile.role === 'admin' && (
-                  <div className="grid grid-cols-2 gap-4">{teachers.map(t => (<div key={t.id} className="bg-white p-4 rounded-2xl shadow flex items-center gap-4"><div className="w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center text-teal-600"><Icon name="users" /></div><div><p className="font-bold text-sm" style={{ color: COLORS.navy }}>{t.name}</p><p className="text-xs text-slate-400">{t.assigned_grade}</p></div></div>))}</div>
+                  <div className="grid grid-cols-2 gap-4">{[].map(t => (<div key={t.id} className="bg-white p-4 rounded-2xl shadow flex items-center gap-4"><div className="w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center text-teal-600"><Icon name="users" /></div><div><p className="font-bold text-sm" style={{ color: COLORS.navy }}>{t.name}</p><p className="text-xs text-slate-400">{t.assigned_grade}</p></div></div>))}</div>
                 )}
 
                 {adminTab === 'settings' && userProfile.role === 'admin' && (
