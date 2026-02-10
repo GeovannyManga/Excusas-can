@@ -248,8 +248,7 @@ export default function App() {
   const [excuses, setExcuses] = useState([]);
   const [tardies, setTardies] = useState([]);
   const [infirmaryRecords, setInfirmaryRecords] = useState([]);
-  const [, setTeachers] = useState([]);
-  const [, setStudentOptions] = useState([]);
+
   const [schoolLogo, setSchoolLogo] = useState(null);
   const [view, setView] = useState('login');
 
